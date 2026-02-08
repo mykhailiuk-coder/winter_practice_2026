@@ -30,6 +30,17 @@ public:
     }
 };
 
+class InvalidArgumentException : public exception
+{
+	string msg;
+public:
+    InvalidArgumentException(string s) : msg(s) {}
+    void message()
+    {
+        cout << "InvalidArgument: " << msg << endl;
+    }
+};
+
 vector<string> split(const string& s, char delim) {
 
     vector<string> result;
@@ -130,15 +141,19 @@ double func(double u, double v, string text)
     }
     else if (abs(u) > 0.5 && u > v)
     {
-        return Tfun(u, 0, text); - Tfun(0, v, "set");
+        return Tfun(u, 0, text) - Tfun(0, v, "set");
     }
+    else
+    {
+        return 0.0;
+	}
 }
 
-double u = 1.5;
-double v = 2.5;
+double uv = 1.5;
+double vv = 2.5;
 string text = "bet hey get";
 
-double rezult = func(u, v, text);
+double rezult = func(uv, vv, text);
 
 double U1(double x)
 {
@@ -404,7 +419,7 @@ double Wnk(double x, double y)
         cout << "FileNotFound: dat1.dat" << endl;
         return 10 * Wnr1(2.5 * x, y) - 4 * Wnr1(x, 2.5 * y);
     }
-    return 10.5 * Wnr(2*x, y) - 3.75 * Wnr(x, 2*y);
+    return 10.5 * Wnr(2 * x, y) - 3.75 * Wnr(x, 2 * y);
 }
 
 double Gnk(double x, double y, double z)
@@ -422,12 +437,59 @@ double v(double x, double y, double z)
     return gold(x, y, 2 * z);
 }
 
-double Qnr(double x, double y, double z) 
+// Пункт 5 алгоритм 1
+double Qnr1(double x, double y) 
 {
-	if (y == 0) return 0.0;
-    if (x > y && 10 * pow(y, 4) - x >= 0 && y != 0) return x*x * sqrt(10 * pow(y, 4) - x);
-    //if () 
-	else return 0.0;
+    if (y == 0) return 1.0;
+
+    else if (x > y && 10 * pow(y, 4) - x >= 0 && y != 0)
+        return x * x * sqrt(10 * pow(y, 4) - x);
+
+    else if (x <= y && 3 * x > y && 10 * pow(x, 4) - y >= 0 && y != 0)
+        return pow(x, 3) * log(10 * pow(x, 4) - y);
+
+    else if (x <= y && 3 * x <= y && pow(y, 4) - 2 * x >= 0 && y != 0)
+        return y * y * sqrt(pow(y, 4) - 2 * x);
+
+    else if (10 * y * y - x < 0)
+		return Rnk(x, y, 1.25);
+
+    else if (y*y - 2*x < 0) 
+		return Rnk(x, y, 1.5);
+
+    else if (10*x*x - y < 0)
+		return Qnk(x, 0);
+
+    else throw InvalidArgumentException("Invalid arguments for Qnr function");
+}
+
+double Qnk(double x, double y) 
+{
+	return 10.5 * Qnr1(2 * x, y) - 3.75 * Qnr1(x, 2 * y);
+}
+
+//Алгоритм 2
+double Qnr2(double x, double y)
+{
+    if (y == 0) return 1;
+    else if (x > y && y != 0) return x * x * (10 * y * y - x / 2);
+    else if (x <= y && 3 * x > y && y != 0) return pow(x, 4) * y;
+    else if (x <= y && 3 * x <= y && y != 0) return pow(y, 4) * x;
+}
+
+double Qnk1(double x, double y) 
+{
+    return 10,5 * Qnr1(2 * x, y) - 3.75 * Qnr1(x, 2 * y);
+}
+
+double Rnk(double x, double y, double z) 
+{
+    return x * Qnk(x, y) + y * Qnk(y, x) + z * Qnk(z, x);
+}
+
+double fun(double x, double y, double z)
+{
+    return x * Rnk(x, y, z) + Rnk(y, z, x) * Rnk(z, x, y);
 }
 
 int main()
@@ -435,8 +497,10 @@ int main()
 	double x, y, z;
 	cout << "Enter x, y, z: ";
 	cin >> x >> y >> z;
+	double u = x, v = y;
     string text;
     cout << "Enter text: ";
     cin >> text;
+	cout << "Result: " << func(u, v, text) << endl;
     return 0;
 }
