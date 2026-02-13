@@ -1,3 +1,4 @@
+#include "Myform1.h" // Тепер перша форма знає про існування другої
 #pragma once
 
 namespace lab4 {
@@ -8,6 +9,7 @@ namespace lab4 {
 	using namespace System::Windows::Forms;
 	using namespace System::Data;
 	using namespace System::Drawing;
+	using namespace System::Data::SqlClient;
 
 	/// <summary>
 	/// Summary for MyForm
@@ -45,7 +47,7 @@ namespace lab4 {
 		/// <summary>
 		/// Required designer variable.
 		/// </summary>
-		System::ComponentModel::Container ^components;
+		System::ComponentModel::Container^ components;
 
 #pragma region Windows Form Designer generated code
 		/// <summary>
@@ -64,41 +66,46 @@ namespace lab4 {
 			// label1
 			// 
 			this->label1->AutoSize = true;
-			this->label1->Location = System::Drawing::Point(199, 240);
+			this->label1->Location = System::Drawing::Point(244, 209);
+			this->label1->Margin = System::Windows::Forms::Padding(6, 0, 6, 0);
 			this->label1->Name = L"label1";
-			this->label1->Size = System::Drawing::Size(36, 13);
+			this->label1->Size = System::Drawing::Size(71, 25);
 			this->label1->TabIndex = 0;
 			this->label1->Text = L"Log in";
 			// 
 			// textBox1
 			// 
-			this->textBox1->Location = System::Drawing::Point(170, 268);
+			this->textBox1->Location = System::Drawing::Point(182, 263);
+			this->textBox1->Margin = System::Windows::Forms::Padding(6, 6, 6, 6);
 			this->textBox1->Name = L"textBox1";
-			this->textBox1->Size = System::Drawing::Size(100, 20);
+			this->textBox1->Size = System::Drawing::Size(196, 31);
 			this->textBox1->TabIndex = 1;
 			this->textBox1->Text = L"First Name";
 			// 
 			// textBox2
 			// 
-			this->textBox2->Location = System::Drawing::Point(170, 294);
+			this->textBox2->Location = System::Drawing::Point(182, 306);
+			this->textBox2->Margin = System::Windows::Forms::Padding(6, 6, 6, 6);
 			this->textBox2->Name = L"textBox2";
-			this->textBox2->Size = System::Drawing::Size(100, 20);
+			this->textBox2->Size = System::Drawing::Size(196, 31);
 			this->textBox2->TabIndex = 2;
 			this->textBox2->Text = L"Last Name";
 			// 
 			// textBox3
 			// 
-			this->textBox3->Location = System::Drawing::Point(170, 321);
+			this->textBox3->Location = System::Drawing::Point(182, 349);
+			this->textBox3->Margin = System::Windows::Forms::Padding(6, 6, 6, 6);
 			this->textBox3->Name = L"textBox3";
-			this->textBox3->Size = System::Drawing::Size(100, 20);
+			this->textBox3->Size = System::Drawing::Size(196, 31);
 			this->textBox3->TabIndex = 3;
 			this->textBox3->Text = L"E-mail";
 			// 
 			// button1
 			// 
-			this->button1->Location = System::Drawing::Point(184, 357);
+			this->button1->Location = System::Drawing::Point(204, 392);
+			this->button1->Margin = System::Windows::Forms::Padding(6, 6, 6, 6);
 			this->button1->Name = L"button1";
-			this->button1->Size = System::Drawing::Size(75, 23);
+			this->button1->Size = System::Drawing::Size(150, 44);
 			this->button1->TabIndex = 4;
 			this->button1->Text = L"Confirm";
 			this->button1->UseVisualStyleBackColor = true;
@@ -106,14 +113,15 @@ namespace lab4 {
 			// 
 			// MyForm
 			// 
-			this->AutoScaleDimensions = System::Drawing::SizeF(6, 13);
+			this->AutoScaleDimensions = System::Drawing::SizeF(12, 25);
 			this->AutoScaleMode = System::Windows::Forms::AutoScaleMode::Font;
-			this->ClientSize = System::Drawing::Size(462, 622);
+			this->ClientSize = System::Drawing::Size(596, 718);
 			this->Controls->Add(this->button1);
 			this->Controls->Add(this->textBox3);
 			this->Controls->Add(this->textBox2);
 			this->Controls->Add(this->textBox1);
 			this->Controls->Add(this->label1);
+			this->Margin = System::Windows::Forms::Padding(6, 6, 6, 6);
 			this->Name = L"MyForm";
 			this->Text = L"MyForm";
 			this->ResumeLayout(false);
@@ -121,22 +129,55 @@ namespace lab4 {
 
 		}
 #pragma endregion
-	private: System::Void button1_Click(System::Object^ sender, System::EventArgs^ e) 
+	private: System::Void button1_Click(System::Object^ sender, System::EventArgs^ e)
 	{
 		String^ firstName = textBox1->Text;
 		String^ lastName = textBox2->Text;
 		String^ email = textBox3->Text;
+
 		if (String::IsNullOrEmpty(firstName) || String::IsNullOrEmpty(lastName) || String::IsNullOrEmpty(email))
 		{
 			MessageBox::Show("Please fill in all fields.", "Error");
 			return;
 		}
-		else if(!email->Contains("@gmail.com"))
+
+		String^ connString = "Data Source=(LocalDB)\\MSSQLLocalDB;Initial Catalog=drinks_shop;Integrated Security=True;";
+
+		SqlConnection^ sqlConn = gcnew SqlConnection(connString);
+
+		try
 		{
-			MessageBox::Show("Please enter a valid Gmail address.", "Error");
-			return;
+			sqlConn->Open();
+
+			String^ sqlQuery = "SELECT COUNT(*) FROM Users WHERE TRIM(first_name) = @fn AND TRIM(last_name) = @ln AND TRIM(email) = @email";
+			SqlCommand^ sqlCmd = gcnew SqlCommand(sqlQuery, sqlConn);
+
+			sqlCmd->Parameters->AddWithValue("@fn", firstName);
+			sqlCmd->Parameters->AddWithValue("@ln", lastName);
+			sqlCmd->Parameters->AddWithValue("@email", email);
+
+			int userCount = (int)sqlCmd->ExecuteScalar();
+
+			if (userCount > 0)
+			{
+				MessageBox::Show("User found! Login successful.", "Success");
+				this->Hide();
+				MyForm1^ shopForm = gcnew MyForm1();
+				shopForm->Show(); // Show the new form
+			}
+			else
+			{
+				MessageBox::Show("User not found.", "Error");
+			}
 		}
-		MessageBox::Show("First Name: " + firstName + "\nLast Name: " + lastName + "\nE-mail: " + email, "User Information");
+		catch (Exception^ ex)
+		{
+			MessageBox::Show("Connection error: " + ex->Message);
+		}
+		finally
+		{
+			sqlConn->Close();
+		}
 	}
 };
 }
