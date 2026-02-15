@@ -1,5 +1,5 @@
-#include "Myform1.h" // Тепер перша форма знає про існування другої
 #pragma once
+#include "MyForm1.h"
 
 namespace lab4 {
 
@@ -133,11 +133,17 @@ namespace lab4 {
 	{
 		String^ firstName = textBox1->Text;
 		String^ lastName = textBox2->Text;
-		String^ email = textBox3->Text;
+		String^ gmail = textBox3->Text;
 
-		if (String::IsNullOrEmpty(firstName) || String::IsNullOrEmpty(lastName) || String::IsNullOrEmpty(email))
+		if (String::IsNullOrEmpty(firstName) || String::IsNullOrEmpty(lastName) || String::IsNullOrEmpty(gmail))
 		{
 			MessageBox::Show("Please fill in all fields.", "Error");
+			return;
+		}
+
+		else if (!gmail->Contains("@"))
+		{
+			MessageBox::Show("Please enter a valid email address.", "Error");
 			return;
 		}
 
@@ -149,12 +155,12 @@ namespace lab4 {
 		{
 			sqlConn->Open();
 
-			String^ sqlQuery = "SELECT COUNT(*) FROM Users WHERE TRIM(first_name) = @fn AND TRIM(last_name) = @ln AND TRIM(email) = @email";
+			String^ sqlQuery = "SELECT COUNT(*) FROM Users WHERE TRIM(first_name) = @fn AND TRIM(last_name) = @ln AND TRIM(gmail) = @gmail";
 			SqlCommand^ sqlCmd = gcnew SqlCommand(sqlQuery, sqlConn);
 
 			sqlCmd->Parameters->AddWithValue("@fn", firstName);
 			sqlCmd->Parameters->AddWithValue("@ln", lastName);
-			sqlCmd->Parameters->AddWithValue("@email", email);
+			sqlCmd->Parameters->AddWithValue("@gmail", gmail);
 
 			int userCount = (int)sqlCmd->ExecuteScalar();
 
@@ -179,5 +185,5 @@ namespace lab4 {
 			sqlConn->Close();
 		}
 	}
-};
+	};
 }
