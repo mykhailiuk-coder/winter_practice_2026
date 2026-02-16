@@ -141,7 +141,7 @@ namespace lab4 {
 			return;
 		}
 
-		else if (!gmail->Contains("@"))
+		else if (!gmail->Contains("@gmail.com"))
 		{
 			MessageBox::Show("Please enter a valid email address.", "Error");
 			return;
